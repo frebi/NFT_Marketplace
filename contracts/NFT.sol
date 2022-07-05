@@ -17,6 +17,7 @@ contract NFT is ERC721URIStorage {
         marketplaceContract = _marketplaceContract;
     }
 
+    //_tokenURI points to the JSON metadata on IPFS that stores the NFT's metadata
     function mint(string memory _tokenURI) public {
         _tokenIds.increment();
         uint256 newTokenId = _tokenIds.current();
