@@ -27,7 +27,7 @@ contract NFT is ERC721URIStorage {
         //Map the tokenId to the tokenURI (which is an IPFS URL with the NFT metadata)
         _setTokenURI(newTokenId, _tokenURI);
 
-        //setApprovalForAll(marketplaceContract, true);
+        setApprovalForAll(marketplaceContract, true);
         emit NFTMinted(newTokenId);
     }
 }

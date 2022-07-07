@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
@@ -10,7 +10,7 @@ contract Marketplace is ReentrancyGuard{
     using Counters for Counters.Counter;
     Counters.Counter private _nftsSold;
     Counters.Counter private _nftCount;
-    uint256 public immutable LISTING_FEE;
+    uint256 public immutable LISTING_FEE = 100000000000000 wei; // 0.0001 ethers
     address payable private _marketOwner;
     
     mapping(uint256 => NFT) private _idToNFT;
@@ -27,9 +27,9 @@ contract Marketplace is ReentrancyGuard{
     event NFTListed(address nftContract, uint256 tokenId, address seller, address owner, uint256 price);
     event NFTSold(address nftContract, uint256 tokenId, address seller, address owner, uint256 price);
 
-    constructor(uint _LISTING_FEE){
+    constructor(/*uint _LISTING_FEE*/){
         _marketOwner = payable(msg.sender);
-        LISTING_FEE = _LISTING_FEE;
+        //LISTING_FEE = _LISTING_FEE;
     }
 
     //list the NFT on the marketplace
@@ -95,7 +95,7 @@ contract Marketplace is ReentrancyGuard{
     //---------------------------------
 
     
-    function getListingFee() public view returns (uint256){
+    function getListingFee() public pure returns (uint256){
         return LISTING_FEE;
     }
 
