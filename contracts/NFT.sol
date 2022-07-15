@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 
 contract NFT is ERC721URIStorage {
     using Counters for Counters.Counter;
-    Counters.Counter private _tokenIds;
+    Counters.Counter public _tokenIds;
     address marketplaceContract;
 
     event NFTMinted(uint256 tokenId);
@@ -27,6 +27,8 @@ contract NFT is ERC721URIStorage {
         //Map the tokenId to the tokenURI (which is an IPFS URL with the NFT metadata)
         _setTokenURI(newTokenId, _tokenURI);
 
+        //When the nftContract executes the setApprovalForAll(contractAddress, true),
+        // it allows the contractAddress (the Market contract) to operate all of the nftContract's tokens
         setApprovalForAll(marketplaceContract, true);
         emit NFTMinted(newTokenId);
     }

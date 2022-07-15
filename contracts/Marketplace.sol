@@ -11,7 +11,7 @@ contract Marketplace is ReentrancyGuard{
     Counters.Counter private _nftsSold;
     Counters.Counter private _nftCount;
     uint256 public immutable LISTING_FEE = 100000000000000 wei; // 0.0001 ethers
-    address payable private _marketOwner;
+    address payable public immutable _marketOwner;
     
     mapping(uint256 => NFT) private _idToNFT;
 
