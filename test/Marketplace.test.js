@@ -85,8 +85,9 @@ contract('Marketplace', (accounts) =>{
 
         it('Creation of NFT item / Transfer from seller to marketplace / New NFTListed event emitted', async () =>{
             tokenId = result.logs[2].args[0].toNumber()
-            //await marketplace.listNft(nft.address, tokenId, 1, {value: 100000000000000})
-            await chai.expect(marketplace.listNft(nft.address, tokenId, 1, {from: accounts[1], value: 100000000000000})).to.emit(marketplace, "NFTListed")//.withArgs(nft.address, tokenId, accounts[1], accounts[0], 1)
+            //https://www.chaijs.com/plugins/chai-eventemitter2/
+            await chai.expect(marketplace.listNft(nft.address, tokenId, 1, {from: accounts[1], value: 100000000000000}))
+                    .to.emit(marketplace, "NFTListed", {withArgs: [nft.address, tokenId, accounts[1], accounts[0], 1]})//.withArgs(nft.address, tokenId, accounts[1], accounts[0], 1)
         })
         
     })
