@@ -65,7 +65,7 @@ contract Marketplace is ReentrancyGuard{
 
         address payable buyer = payable(msg.sender);
         (payable(nft.seller)).transfer(msg.value);
-        (IERC721(_nftContract)).transferFrom(payable(address(this)), buyer, nft.tokenId);
+        (IERC721(_nftContract)).transferFrom(address(this), buyer, nft.tokenId);
         payable(_marketOwner).transfer(LISTING_FEE);
         nft.owner = buyer;
         nft.listed = false;
@@ -79,7 +79,7 @@ contract Marketplace is ReentrancyGuard{
         require(_price > 0, "Price must be at least 1 wei");
         require(msg.value == LISTING_FEE, "Not enough ether for listing fee");
 
-        (IERC721(_nftContract)).transferFrom(msg.sender, payable(address(this)), _tokenId);
+        (IERC721(_nftContract)).transferFrom(msg.sender, address(this), _tokenId);
 
         NFT storage nft = _idToNFT[_tokenId];
         nft.seller = payable(msg.sender);
