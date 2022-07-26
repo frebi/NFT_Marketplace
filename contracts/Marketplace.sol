@@ -8,12 +8,13 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 contract Marketplace is ReentrancyGuard{
     
     using Counters for Counters.Counter;
-    Counters.Counter private _nftsSold;
-    Counters.Counter private _nftCount;
+    Counters.Counter public _nftsSold;
+    Counters.Counter public _nftCount;
     uint256 public immutable LISTING_FEE;// = 100000000000000 wei; // 0.0001 ethers
     address payable public immutable _marketOwner;
+    //address public marketContract = address(this);
     
-    mapping(uint256 => NFT) private _idToNFT;
+    mapping(uint256 => NFT) public _idToNFT;
 
     struct NFT{
         address nftContract;
@@ -37,7 +38,7 @@ contract Marketplace is ReentrancyGuard{
         require(_price > 0, "Price must be at least 1 wei");
         require(msg.value == LISTING_FEE, "Not enough ether for listing fee");
 
-        IERC721(_nftContract).transferFrom(msg.sender, address(this), _tokenId);
+        (IERC721(_nftContract)).transferFrom(msg.sender, address(this), _tokenId);
 
         _nftCount.increment();
 
@@ -57,15 +58,15 @@ contract Marketplace is ReentrancyGuard{
     //Buy an NFT
     function buyNft(address _nftContract, uint256 _tokenId) public payable nonReentrant{
         NFT storage nft = _idToNFT[_tokenId];
-        uint256 nftCount = _nftCount.current();
-        require(_tokenId > 0 && _tokenId <= nftCount, "NFT item doesn't exist");
+        //uint256 nftCount = _nftCount.current();
+        require(_tokenId > 0/* && _tokenId <= nftCount*/, "NFT item doesn't exist");
         require(nft.listed, "NFT item is not listed on the marketplace");
         require(msg.value >= nft.price, "Not enough ether to cover asking price");
 
         address payable buyer = payable(msg.sender);
-        payable(nft.seller).transfer(msg.value);
-        IERC721(_nftContract).transferFrom(address(this), buyer, nft.tokenId);
-        _marketOwner.transfer(LISTING_FEE);
+        (payable(nft.seller)).transfer(msg.value);
+        (IERC721(_nftContract)).transferFrom(payable(address(this)), buyer, nft.tokenId);
+        payable(_marketOwner).transfer(LISTING_FEE);
         nft.owner = buyer;
         nft.listed = false;
 
@@ -78,7 +79,7 @@ contract Marketplace is ReentrancyGuard{
         require(_price > 0, "Price must be at least 1 wei");
         require(msg.value == LISTING_FEE, "Not enough ether for listing fee");
 
-        IERC721(_nftContract).transferFrom(msg.sender, address(this), _tokenId);
+        (IERC721(_nftContract)).transferFrom(msg.sender, payable(address(this)), _tokenId);
 
         NFT storage nft = _idToNFT[_tokenId];
         nft.seller = payable(msg.sender);
@@ -87,7 +88,7 @@ contract Marketplace is ReentrancyGuard{
         nft.price = _price;
 
         _nftsSold.decrement();
-        emit NFTListed(_nftContract, _tokenId, msg.sender, address(this), _price);
+        emit NFTListed(_nftContract, _tokenId, msg.sender, payable(address(this)), _price);
     }
 
     
@@ -97,6 +98,16 @@ contract Marketplace is ReentrancyGuard{
     
     function getListingFee() public view returns (uint256){
         return LISTING_FEE;
+    }
+
+    function getAllNFT() public view returns (NFT[] memory){
+        uint nftCount = _nftCount.current();
+        uint nftsIndex = 0;
+        NFT[] memory nfts = new NFT[](nftCount);
+        for(uint i=0; i<nftCount; i++){
+            nfts[nftsIndex] = _idToNFT[i+1];
+        }
+        return nfts;
     }
 
     function getListedNfts() public view returns (NFT[] memory){

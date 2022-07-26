@@ -1,6 +1,7 @@
 const {assert, expect} = require("chai");
 const chai = require("chai");
 const eventemitter = require("chai-eventemitter2");
+const { default: Web3 } = require("web3");
 chai.use(eventemitter());
 
 const NFT = artifacts.require("NFT");
@@ -13,12 +14,18 @@ contract('Marketplace', (accounts) =>{
     let feePercent = 100000000000000;
     let deployer
     let URI = "sample URI"
+    let Nft_minted_to_address_1
 
     beforeEach(async () =>{
         nft = await NFT.deployed()
         marketplace = await Marketplace.deployed()
-    })
 
+        //Different way to deploy these two contracts
+        //marketplace = await Marketplace.new(100000000000000)
+        //nft = await NFT.new(marketplace.address)
+    })
+    
+    
     it('deployed successfully', async () =>{
         const addressN = await nft.address
         const addressM = await marketplace.address
@@ -71,25 +78,70 @@ contract('Marketplace', (accounts) =>{
             expect(await nft.tokenURI(3)).to.equal(URI)
         })
     })
+    
 
     describe('Making marketplace item', async () =>{
         let price = 1
         let result
         let tokenId
 
+        
         beforeEach(async () =>{
             //address 1 mint an NFT and approves marketplace to spend it
             result = await nft.mint(URI, {from: accounts[1]})
-            await nft.setApprovalForAll(marketplace.address, true, {from: accounts[1]})
+            tokenId = result.logs[2].args[0].toNumber()
+            //await nft.setApprovalForAll(marketplace.address, true, {from: accounts[1]})
+        })
+        
+        it('Creation of NFT item / Transfer from seller to marketplace / New NFTListed event emitted', async () =>{
+
+            //owner of NFT should be the second account of ganache
+            assert.equal(await nft.ownerOf(tokenId), accounts[1])
+
+            //https://www.chaijs.com/plugins/chai-eventemitter2/
+            await chai.expect(await marketplace.listNft(nft.address, tokenId, 1, {from: accounts[1], value: 100000000000000}))
+                    .to.emit(marketplace, "NFTListed", {withArgs: [nft.address, tokenId, accounts[1], marketplace.address, 1]});
+            
+            assert.equal((await marketplace._nftCount()).toNumber(), 1)
         })
 
-        it('Creation of NFT item / Transfer from seller to marketplace / New NFTListed event emitted', async () =>{
-            tokenId = result.logs[2].args[0].toNumber()
-            //https://www.chaijs.com/plugins/chai-eventemitter2/
-            await chai.expect(marketplace.listNft(nft.address, tokenId, 1, {from: accounts[1], value: 100000000000000}))
-                    .to.emit(marketplace, "NFTListed", {withArgs: [nft.address, tokenId, accounts[1], accounts[0], 1]})//.withArgs(nft.address, tokenId, accounts[1], accounts[0], 1)
+        it('listing', async () => {
+            assert.equal(await nft.ownerOf(tokenId), accounts[1])
+            await marketplace.listNft(nft.address, tokenId, 1, {from: accounts[1], value: 100000000000000})
+
+             // Owner of NFT should now be the marketplace
+             assert.equal(await nft.ownerOf(tokenId), marketplace.address)
+             assert.equal((await marketplace._nftCount()).toNumber(), 2)
+
+             const item = await marketplace._idToNFT(tokenId)
+             expect((item.tokenId).toNumber()).to.equal(5)
+             expect(item.nftContract).to.equal(nft.address)
+             expect((item.price).toNumber()).to.equal(price)
+             expect(item.listed).to.equal(true)
         })
         
     })
+    
 
+    describe('Purchasing marketplace items', async () =>{
+        let price = 2
+        let result
+        let tokenId
+
+        beforeEach(async () =>{
+            result = await nft.mint(URI, {from: accounts[1]})
+            tokenId = result.logs[2].args[0].toNumber()
+            //let ris = await nft.setApprovalForAll(marketplace.address, true, {from: accounts[1]})
+            //console.log(ris.logs)
+            await marketplace.listNft(nft.address, tokenId, 1, {from: accounts[1], value: 100000000000000})
+        })
+
+        it('buy nft', async () =>{
+            const sellerInitialEthBal = await new web3.eth.getBalance(accounts[1])
+            //console.log(web3.utils.fromWei(sellerInitialEthBal, 'ether'))
+            const feeAccountInitialEthBal = await new web3.eth.getBalance(accounts[0])
+            //console.log(await nft.isApprovedForAll(accounts[1], marketplace.address))
+            await marketplace.buyNft(nft.address, tokenId, {from: accounts[2], value: 1})
+        })
+    })
 })
