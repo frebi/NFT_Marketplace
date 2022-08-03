@@ -8,13 +8,13 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 contract Marketplace is ReentrancyGuard{
     
     using Counters for Counters.Counter;
-    Counters.Counter public _nftsSold;
-    Counters.Counter public _nftCount;
-    uint256 public immutable LISTING_FEE;// = 100000000000000 wei; // 0.0001 ethers
-    address payable public immutable _marketOwner;
+    Counters.Counter private _nftsSold;
+    Counters.Counter private _nftCount;
+    uint256 private immutable LISTING_FEE;// = 100000000000000 wei; // 0.0001 ethers
+    address payable private immutable _marketOwner;
     //address public marketContract = address(this);
     
-    mapping(uint256 => NFT) public _idToNFT;
+    mapping(uint256 => NFT) private _idToNFT;
 
     struct NFT{
         address nftContract;
@@ -100,6 +100,25 @@ contract Marketplace is ReentrancyGuard{
         return LISTING_FEE;
     }
 
+    function get_NFT(uint256 NFT_tokenId) public view returns (NFT memory){
+        return _idToNFT[NFT_tokenId];
+    }
+
+    function get_nftsSold() public view returns (uint256){
+        uint256 sold = _nftsSold.current(); 
+        return sold;
+    }
+
+    function get_nftCount() public view returns (uint256){
+        uint256 count = _nftCount.current(); 
+        return count;
+    }
+
+    function get_marketOwner() public view returns (address){
+        return _marketOwner;
+    }
+
+
     function getAllNFT() public view returns (NFT[] memory){
         uint nftCount = _nftCount.current();
         uint nftsIndex = 0;
@@ -149,18 +168,18 @@ contract Marketplace is ReentrancyGuard{
         uint nftCount = _nftCount.current();
         uint myListedNftCount = 0;
         for (uint i = 0; i < nftCount; i++) {
-        if (_idToNFT[i + 1].seller == msg.sender && _idToNFT[i + 1].listed) {
-            myListedNftCount++;
-        }
+            if (_idToNFT[i + 1].seller == msg.sender && _idToNFT[i + 1].listed) {
+                myListedNftCount++;
+            }
         }
 
         NFT[] memory nfts = new NFT[](myListedNftCount);
         uint nftsIndex = 0;
         for (uint i = 0; i < nftCount; i++) {
-        if (_idToNFT[i + 1].seller == msg.sender && _idToNFT[i + 1].listed) {
-            nfts[nftsIndex] = _idToNFT[i + 1];
-            nftsIndex++;
-        }
+            if (_idToNFT[i + 1].seller == msg.sender && _idToNFT[i + 1].listed) {
+                nfts[nftsIndex] = _idToNFT[i + 1];
+                nftsIndex++;
+            }
         }
         return nfts;
     }

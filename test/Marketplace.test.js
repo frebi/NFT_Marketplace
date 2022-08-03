@@ -51,8 +51,8 @@ contract('Marketplace', (accounts) =>{
 
         it('Check for account of the marketplace', async () => {
             //Checking if first Ganache account and marketplace account are the same
-            assert.equal(await marketplace._marketOwner(), accounts[0])
-            assert.equal(await marketplace.LISTING_FEE(), feePercent)
+            assert.equal(await marketplace.get_marketOwner(), accounts[0])
+            assert.equal(await marketplace.getListingFee(), feePercent)
         })
     })
 
@@ -93,7 +93,7 @@ contract('Marketplace', (accounts) =>{
             //await nft.setApprovalForAll(marketplace.address, true, {from: accounts[1]})
         })
         
-        it('Creation of NFT item / Transfer from seller to marketplace / New NFTListed event emitted', async () =>{
+        it('New NFTListed event emitted', async () =>{
 
             //owner of NFT should be the second account of ganache
             assert.equal(await nft.ownerOf(tokenId), accounts[1])
@@ -102,29 +102,29 @@ contract('Marketplace', (accounts) =>{
             await chai.expect(await marketplace.listNft(nft.address, tokenId, 1, {from: accounts[1], value: 100000000000000}))
                     .to.emit(marketplace, "NFTListed", {withArgs: [nft.address, tokenId, accounts[1], marketplace.address, 1]});
             
-            assert.equal((await marketplace._nftCount()).toNumber(), 1)
+            assert.equal((await marketplace.get_nftCount()).toNumber(), 1)
         })
 
-        it('listing', async () => {
+        it('Listing NFT item', async () => {
             assert.equal(await nft.ownerOf(tokenId), accounts[1])
             await marketplace.listNft(nft.address, tokenId, 1, {from: accounts[1], value: 100000000000000})
 
              // Owner of NFT should now be the marketplace
              assert.equal(await nft.ownerOf(tokenId), marketplace.address)
-             assert.equal((await marketplace._nftCount()).toNumber(), 2)
+             assert.equal((await marketplace.get_nftCount()).toNumber(), 2)
 
-             const item = await marketplace._idToNFT(tokenId)
-             expect((item.tokenId).toNumber()).to.equal(5)
+             const item = await marketplace.get_NFT(tokenId)             
+             expect(Number(item.tokenId)).to.equal(5)
              expect(item.nftContract).to.equal(nft.address)
-             expect((item.price).toNumber()).to.equal(price)
+             expect(Number(item.price)).to.equal(price)
              expect(item.listed).to.equal(true)
         })
         
     })
     
-
+    
     describe('Purchasing marketplace items', async () =>{
-        let price = 2
+        let price = 1
         let result
         let tokenId
 
@@ -133,15 +133,42 @@ contract('Marketplace', (accounts) =>{
             tokenId = result.logs[2].args[0].toNumber()
             //let ris = await nft.setApprovalForAll(marketplace.address, true, {from: accounts[1]})
             //console.log(ris.logs)
-            await marketplace.listNft(nft.address, tokenId, 1, {from: accounts[1], value: 100000000000000})
+            await marketplace.listNft(nft.address, tokenId, price, {from: accounts[1], value: 100000000000000})
         })
 
+        it('New NFTSold event emitted', async () =>{
+
+            assert.equal(await nft.ownerOf(tokenId), marketplace.address)
+
+            //https://www.chaijs.com/plugins/chai-eventemitter2/
+            await chai.expect(await marketplace.buyNft(nft.address, tokenId, {from: accounts[2], value: price}))
+                    .to.emit(marketplace, "NFTSold", {withArgs: [nft.address, tokenId, accounts[1], accounts[2], price]});
+            
+            assert.equal((await marketplace.get_nftCount()).toNumber(), 3)
+        })
+        
         it('buy nft', async () =>{
             const sellerInitialEthBal = await new web3.eth.getBalance(accounts[1])
             //console.log(web3.utils.fromWei(sellerInitialEthBal, 'ether'))
             const feeAccountInitialEthBal = await new web3.eth.getBalance(accounts[0])
+
             //console.log(await nft.isApprovedForAll(accounts[1], marketplace.address))
-            await marketplace.buyNft(nft.address, tokenId, {from: accounts[2], value: 1})
+            await marketplace.buyNft(nft.address, tokenId, {from: accounts[2], value: price})
+
+            const sellerFinalEthBal = await new web3.eth.getBalance(accounts[1])
+            const feeAccountFinalEthBal = await new web3.eth.getBalance(accounts[0])
+            assert.equal(+sellerFinalEthBal, (+sellerInitialEthBal + price))
+            assert.equal(+feeAccountFinalEthBal, (+feeAccountInitialEthBal + 100000000000000))
+
+
+            const item = await marketplace.get_NFT(tokenId)
+            assert.equal(item.listed, false)
+            assert.equal(await nft.ownerOf(tokenId), accounts[2])
+        })
+
+        it("Should fail for invalid item ids, sold items and when not enough ether is paid", async () =>{
+            
         })
     })
+    
 })
