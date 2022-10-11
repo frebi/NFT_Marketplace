@@ -1,8 +1,10 @@
 const {assert, expect} = require("chai");
 const chai = require("chai");
+const chaiAsPromised = require("chai-as-promised");
 const eventemitter = require("chai-eventemitter2");
 const { default: Web3 } = require("web3");
 chai.use(eventemitter());
+chai.use(chaiAsPromised);
 
 const NFT = artifacts.require("NFT");
 const Marketplace = artifacts.require("Marketplace");
@@ -165,9 +167,55 @@ contract('Marketplace', (accounts) =>{
             assert.equal(item.listed, false)
             assert.equal(await nft.ownerOf(tokenId), accounts[2])
         })
-
+        /*
         it("Should fail for invalid item ids, sold items and when not enough ether is paid", async () =>{
+            //await (marketplace.buyNft(nft.address, 5, {from: accounts[2], value: price})).should.be.rejectedWith("NFT item doesn't exist")
+            //assert.isRejected(await marketplace.buyNft(nft.address, 5, {from: accounts[2], value: price}), "NFT item doesn't exist")
+            //await chai.expect(await marketplace.buyNft(nft.address, 5, {from: accounts[2], value: price})).to.be.rejectedWith("NFT item doesn't exist")
+            //chai.expect(await marketplace.buyNft(nft.address, 5, {from: accounts[2], value: price})).to.be.eventually.rejectedWith("NFT item doesn't exist")
+            //(await marketplace.buyNft(nft.address, 5, {from: accounts[2], value: price})).should.be.rejectedWith("NFT item doesn't exist")
+            //(await Promise.reject(await marketplace.buyNft(nft.address, 5, {from: accounts[2], value: price}))).should.be.rejectedWith("NFT item doesn't exist")
+            //(await Promise.resolve(42)).should.equal(42)
+            chai.expect(await marketplace.buyNft(nft.address, 5, {from: accounts[2], value: price})).rejectedWith("NFT item doesn't exist")
+        })
+        */
+    })
+
+
+    describe('Reselling marketplace items', async () =>{
+        let price = 1
+        let result
+        let tokenId
+
+        beforeEach(async () =>{
+            result = await nft.mint(URI, {from: accounts[1]})
+            tokenId = result.logs[2].args[0].toNumber()
+
+            await marketplace.listNft(nft.address, tokenId, price, {from: accounts[1], value: 100000000000000})
+            await marketplace.buyNft(nft.address, tokenId, {from: accounts[2], value: price})
+        })
+        it('New NFTListed event emitted', async () =>{
+
+            assert.equal(await nft.ownerOf(tokenId), accounts[2])
+
+            //https://www.chaijs.com/plugins/chai-eventemitter2/
+            await chai.expect(await marketplace.listNft(nft.address, tokenId, 1, {from: accounts[2], value: 100000000000000}))
+                    .to.emit(marketplace, "NFTListed", {withArgs: [nft.address, tokenId, accounts[2], marketplace.address, 1]});
             
+            //assert.equal((await marketplace.get_nftCount()).toNumber(), 1)
+        })
+
+        it('resell nft', async () =>{
+            assert.equal(await nft.ownerOf(tokenId), accounts[2])
+            await marketplace.resellNft(nft.address, tokenId, 1, {from: accounts[2], value: 100000000000000})
+
+             // Owner of NFT should now be the marketplace
+             assert.equal(await nft.ownerOf(tokenId), marketplace.address)
+
+             const item = await marketplace.get_NFT(tokenId)
+             expect(item.nftContract).to.equal(nft.address)
+             expect(Number(item.price)).to.equal(price)
+             expect(item.listed).to.equal(true)
         })
     })
     
