@@ -7,8 +7,9 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 
 
 contract NFT is ERC721URIStorage {
-    using Counters for Counters.Counter;
-    Counters.Counter public _tokenIds;
+    //using Counters for Counters.Counter;
+    //Counters.Counter public _tokenIds;
+    uint256 public _tokenIds = 0;
     address marketplaceContract;
 
     event NFTMinted(uint256 tokenId);
@@ -19,8 +20,9 @@ contract NFT is ERC721URIStorage {
 
     //_tokenURI points to the JSON metadata on IPFS that stores the NFT's metadata
     function mint(string memory _tokenURI) public {
-        _tokenIds.increment();
-        uint256 newTokenId = _tokenIds.current();
+        //_tokenIds.increment();
+        _tokenIds++;
+        uint256 newTokenId = _tokenIds;
 
         //Mint the NFT with tokenId newTokenId to the address who called createToken
         _safeMint(msg.sender, newTokenId);

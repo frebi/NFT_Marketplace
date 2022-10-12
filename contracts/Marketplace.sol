@@ -1,15 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import "@openzeppelin/contracts/utils/Counters.sol";
+//import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 contract Marketplace is ReentrancyGuard{
     
-    using Counters for Counters.Counter;
-    Counters.Counter private _nftsSold;
-    Counters.Counter private _nftCount;
+    //using Counters for Counters.Counter;
+    //Counters.Counter private _nftsSold;
+    //Counters.Counter private _nftCount;
+    uint256 private _nftsSold = 0;
+    uint256 private _nftCount = 0;
     uint256 private immutable LISTING_FEE;// = 100000000000000 wei; // 0.0001 ethers
     address payable private immutable _marketOwner;
     //address public marketContract = address(this);
@@ -40,7 +42,8 @@ contract Marketplace is ReentrancyGuard{
 
         (IERC721(_nftContract)).transferFrom(msg.sender, address(this), _tokenId);
 
-        _nftCount.increment();
+        //_nftCount.increment();
+        _nftCount++;
 
         _idToNFT[_tokenId] = NFT(
             _nftContract,
@@ -70,7 +73,9 @@ contract Marketplace is ReentrancyGuard{
         nft.owner = buyer;
         nft.listed = false;
 
-        _nftsSold.increment();
+        //_nftsSold.increment();
+        _nftsSold++;
+
         emit NFTSold(_nftContract, nft.tokenId, nft.seller, buyer, msg.value);
     }
 
@@ -87,7 +92,9 @@ contract Marketplace is ReentrancyGuard{
         nft.listed = true;
         nft.price = _price;
 
-        _nftsSold.decrement();
+        //_nftsSold.decrement();
+        _nftsSold--;
+
         emit NFTListed(_nftContract, _tokenId, msg.sender, payable(address(this)), _price);
     }
 
@@ -105,13 +112,11 @@ contract Marketplace is ReentrancyGuard{
     }
 
     function get_nftsSold() public view returns (uint256){
-        uint256 sold = _nftsSold.current(); 
-        return sold;
+        return _nftsSold;
     }
 
     function get_nftCount() public view returns (uint256){
-        uint256 count = _nftCount.current(); 
-        return count;
+        return _nftCount;
     }
 
     function get_marketOwner() public view returns (address){
@@ -120,7 +125,7 @@ contract Marketplace is ReentrancyGuard{
 
 
     function getAllNFT() public view returns (NFT[] memory){
-        uint nftCount = _nftCount.current();
+        uint nftCount = _nftCount;
         uint nftsIndex = 0;
         NFT[] memory nfts = new NFT[](nftCount);
         for(uint i=0; i<nftCount; i++){
@@ -130,8 +135,8 @@ contract Marketplace is ReentrancyGuard{
     }
 
     function getListedNfts() public view returns (NFT[] memory){
-        uint256 nftCount = _nftCount.current();
-        uint256 unsoldNftsCount = nftCount - _nftsSold.current();
+        uint256 nftCount = _nftCount;
+        uint256 unsoldNftsCount = nftCount - _nftsSold;
 
         NFT[] memory nfts = new NFT[](unsoldNftsCount);
         uint nftsIndex = 0;
@@ -145,7 +150,7 @@ contract Marketplace is ReentrancyGuard{
     }
 
     function getMyNfts() public view returns (NFT[] memory){
-        uint nftCount = _nftCount.current();
+        uint nftCount = _nftCount;
         uint myNftCount = 0;
         for(uint i=0; i<nftCount; i++){
             if(_idToNFT[i+1].owner == msg.sender){
@@ -165,7 +170,7 @@ contract Marketplace is ReentrancyGuard{
     }
 
     function getMyListedNfts() public view returns (NFT[] memory){
-        uint nftCount = _nftCount.current();
+        uint nftCount = _nftCount;
         uint myListedNftCount = 0;
         for (uint i = 0; i < nftCount; i++) {
             if (_idToNFT[i + 1].seller == msg.sender && _idToNFT[i + 1].listed) {

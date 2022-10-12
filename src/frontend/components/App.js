@@ -2,9 +2,9 @@ import{
     BrowserRouter,
     Routes,
     Route
-} from "react-router-dom";
-import Web3 from 'web3';
-import Marketplace from '../../abis/Marketplace.json';
+} from "react-router-dom"
+import Web3 from 'web3'
+import Marketplace from '../../abis/Marketplace.json'
 import NFT from '../../abis/NFT.json'
 
 //import Navigation from './Navbar';
@@ -21,14 +21,14 @@ import NFTAddress from '../contractsData/NFT-address.json'
 import { useState, useEffect } from 'react'
 //import { ethers } from "ethers"
 import { Spinner } from 'react-bootstrap'
+import { render } from "react-dom";
 
 function App(){
     const [loading, setLoading] = useState(true)
-    //const [account, setAccount] =useState(null)
+    const [account, setAccount] = useState(null)
     const [nft, setNFT] = useState({})
     const [marketplace, setMarketplace] = useState({})
     const [web3, setWeb3] = useState(null)
-    const [account, setAccount] = useState("0x0")
 
     
     const loadWeb3 = async() =>{
@@ -55,9 +55,7 @@ function App(){
 
         const network_id = await web3.eth.net.getId()
         const accounts = await web3.eth.getAccounts()
-        //this.setState({account: accounts[0]})
         setAccount(accounts[0])
-
         //------- creating new contract object to interact with -----
         const marketplace = new web3.eth.Contract(Marketplace.abi, Marketplace.networks[network_id].address)
         setMarketplace(marketplace)
@@ -66,10 +64,10 @@ function App(){
         setLoading(false)
     }
 
-
     useEffect(() => {
         loadWeb3()
       }, [])
+
 
     return (
         <BrowserRouter>
@@ -86,7 +84,7 @@ function App(){
                     <Home marketplace={marketplace} nft={nft} />
                   } />
                   <Route path="/create" element={
-                    <Create marketplace={marketplace} nft={nft} />
+                    <Create marketplace={marketplace} nft={nft} account={account}/>
                   } />
                 </Routes>
               )}

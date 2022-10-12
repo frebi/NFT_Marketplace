@@ -7,29 +7,43 @@ const Home = ({ marketplace, nft }) => {
     const [items, setItems] = useState([])
     const loadMarketplaceItems = async () => {
         //load all unsold items
-        const itemCount = await marketplace.methods.get_nftCount()
+        const itemCount = await marketplace.methods.get_nftCount().call()
         let items = []
-
+        console.log("nft count: "+itemCount)
         for(let i=1; i <= itemCount; i++){
-            const item = await marketplace.methods.get_NFT(i)
+            const item = await marketplace.methods.get_NFT(i).call()
+            
 
-            if(!item.listed){
+          //-------------
+            console.log("tokenid: "+item.tokenId)
+            console.log("seller: "+item.seller)
+            console.log("listed: "+item.listed)
+            console.log("uri: "+await nft.methods.tokenURI(item.tokenId).call())
+          //-------------
+
+            // Iterate over the listed NFTs and retrieve their metadata
+            if(item.listed){
                 //get uri url from nft contract
-                const uri = await nft.tokenURI(item.tokenId)
+                const uri = await nft.methods.tokenURI(item.tokenId).call()
 
-                //use uri url to fetch the nft metadata stored on ipfs
-                const response = await fetch(uri)
-                const metadata = await response.json()
-                
-                //Add item to items array
-                items.push({
-                    price: item.price,
-                    itemId: item.tokenId,
-                    seller: item.seller,
-                    name: metadata.name,
-                    description: metadata.description,
-                    image: metadata.image
-                })
+                try{
+                  //use uri url to fetch the nft metadata stored on ipfs
+                  const response = await fetch(uri)
+                  const metadata = await response.json()
+                  
+                  //Add item to items array
+                  items.push({
+                      price: item.price,
+                      itemId: item.tokenId,
+                      seller: item.seller,
+                      name: metadata.name,
+                      description: metadata.description,
+                      image: metadata.image
+                  })
+                }
+                catch(error){
+                  console.log("!!! error retrieving nft metadata !!!")
+                }
             }
         }
         setLoading(false)
