@@ -9,7 +9,7 @@ const Home = ({ marketplace, nft }) => {
         //load all unsold items
         const itemCount = await marketplace.methods.get_nftCount().call()
         let items = []
-        console.log("nft count: "+itemCount)
+        //console.log("nft count: "+itemCount)
         for(let i=1; i <= itemCount; i++){
             const item = await marketplace.methods.get_NFT(i).call()
             

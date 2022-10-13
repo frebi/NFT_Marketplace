@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import Web3 from 'web3'
-import { ethers } from "ethers"
+//import { ethers } from "ethers"
 import { Row, Form, Button } from 'react-bootstrap'
 import { create as ipfsHttpClient } from 'ipfs-http-client'
 const client = ipfsHttpClient('https://ipfs.infura.io:5001/api/v0')
@@ -53,8 +53,8 @@ const Create = ({ marketplace, nft, account}) => {
     console.log(uri)
     console.log(account)
 
-      let listingFee = await marketplace.methods.getListingFee()
-      listingFee = listingFee.toString()
+      //let listingFee = await marketplace.methods.getListingFee()
+      //listingFee = listingFee.toString()
 
       nft.methods.mint(uri).send({ from: account }).on('receipt', function (receipt) {
         console.log('minted');
