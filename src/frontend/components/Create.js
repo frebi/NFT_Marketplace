@@ -2,8 +2,20 @@ import { useState } from 'react'
 import Web3 from 'web3'
 //import { ethers } from "ethers"
 import { Row, Form, Button } from 'react-bootstrap'
-import { create as ipfsHttpClient } from 'ipfs-http-client'
-const client = ipfsHttpClient('https://ipfs.infura.io:5001/api/v0')
+import { create } from 'ipfs-http-client'
+
+const { REACT_APP_PROJECTID, REACT_APP_PROJECTSECRET } = process.env
+console.log(REACT_APP_PROJECTID)
+console.log(REACT_APP_PROJECTSECRET)
+const auth = 'Basic ' + Buffer.from(REACT_APP_PROJECTID + ':' + REACT_APP_PROJECTSECRET).toString('base64');
+const client = create({
+    host: 'infura-ipfs.io',
+    port: 5001,
+    protocol: 'https',
+    headers: {
+        authorization: auth,
+    },
+});
 
 const Create = ({ marketplace, nft, account}) => {
   const [image, setImage] = useState('')
@@ -24,8 +36,8 @@ const Create = ({ marketplace, nft, account}) => {
     if(typeof file !== 'undefined'){
       try{
         const result = await client.add(file)
-        console.log(result)
-        setImage(`https://ipfs.infura.io/ipfs/${result.path}`)
+        console.log("line 39: "+result)
+        setImage(`https://my-nft-market.infura-ipfs.io/ipfs/${result.path}`)
       }catch (error){
         console.log("ipfs image upload error: ", error)
       }
@@ -36,9 +48,9 @@ const Create = ({ marketplace, nft, account}) => {
   const createNFT = async () =>{
     if(!image || !price || !name || !description) return
     try{
-      //const result = await client.add(JSON.stringify({image, price, name, description}))
-      const result = JSON.stringify({image, price, name, description})
-      console.log(result)
+      const result = await client.add(JSON.stringify({image, price, name, description}))
+      //const result = JSON.stringify({image, price, name, description})
+      console.log("line 53: "+result)
 
       mintAndList(result)
     }catch(error){
@@ -48,10 +60,11 @@ const Create = ({ marketplace, nft, account}) => {
 
   const mintAndList = async (result) =>{
     //const uri = `https://ipfs.infura.io/ipfs/${result.path}`
-    const uri = result
+    const uri = `https://my-nft-market.infura-ipfs.io/ipfs/${result.path}`
+    console.log("line 63: "+uri)
 
-    console.log(uri)
-    console.log(account)
+    //console.log(uri)
+    //console.log(account)
 
       //let listingFee = await marketplace.methods.getListingFee()
       //listingFee = listingFee.toString()
