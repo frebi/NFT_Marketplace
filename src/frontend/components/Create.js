@@ -5,8 +5,8 @@ import { Row, Form, Button } from 'react-bootstrap'
 import { create } from 'ipfs-http-client'
 
 const { REACT_APP_PROJECTID, REACT_APP_PROJECTSECRET } = process.env
-console.log(REACT_APP_PROJECTID)
-console.log(REACT_APP_PROJECTSECRET)
+//console.log(REACT_APP_PROJECTID)
+//console.log(REACT_APP_PROJECTSECRET)
 const auth = 'Basic ' + Buffer.from(REACT_APP_PROJECTID + ':' + REACT_APP_PROJECTSECRET).toString('base64');
 const client = create({
     host: 'infura-ipfs.io',
@@ -52,7 +52,8 @@ const Create = ({ marketplace, nft, account}) => {
       //const result = JSON.stringify({image, price, name, description})
       console.log("line 53: "+result)
 
-      mintAndList(result)
+      await mintAndList(result)
+
     }catch(error){
       console.log("ipfs uri upload error: ", error)
     }

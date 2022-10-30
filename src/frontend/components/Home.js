@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { ethers } from "ethers"
 import { Row, Col, Card, Button } from 'react-bootstrap'
 
-const Home = ({ marketplace, nft }) => {
+const Home = ({ marketplace, nft, account }) => {
     const [loading, setLoading] = useState(true)
     const [items, setItems] = useState([])
     const loadMarketplaceItems = async () => {
@@ -15,6 +15,7 @@ const Home = ({ marketplace, nft }) => {
             
 
           //-------------
+            console.log("price: "+item.price)
             console.log("tokenid: "+item.tokenId)
             console.log("seller: "+item.seller)
             console.log("listed: "+item.listed)
@@ -51,7 +52,8 @@ const Home = ({ marketplace, nft }) => {
     }
 
       const buyMarketItem = async (item) => {
-        await (await marketplace.methods.buyNft(nft.address, item.tokenId, { value: item.price })).wait()
+        await marketplace.methods.buyNft(nft._address, item.itemId)
+        .send({ from: account, value: item.price })
         loadMarketplaceItems()
       }
 
