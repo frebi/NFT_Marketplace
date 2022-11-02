@@ -119,11 +119,6 @@ const MyPurchases = ({ marketplace, nft, account }) => {
     }
     
 
-
-
-
-
-
     useEffect(() => {
         loadPurchasedItems()
       }, [])
@@ -163,9 +158,11 @@ const MyPurchases = ({ marketplace, nft, account }) => {
               </Row>
             </div>
             : (
-              <main style={{ padding: "1rem 0" }}>
-                <h2>No purchases</h2>
-              </main>
+              <div className="px-5 py-5 container">
+                <main style={{ padding: "1rem 0" }}>
+                  <h2>No purchases</h2>
+                </main>
+              </div>
             )
           }
           {soldItems.length > 0 && renderSoldItems(soldItems)}

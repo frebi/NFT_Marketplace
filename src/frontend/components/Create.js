@@ -1,12 +1,9 @@
 import { useState } from 'react'
 import Web3 from 'web3'
-//import { ethers } from "ethers"
 import { Row, Form, Button } from 'react-bootstrap'
 import { create } from 'ipfs-http-client'
 
 const { REACT_APP_PROJECTID, REACT_APP_PROJECTSECRET } = process.env
-//console.log(REACT_APP_PROJECTID)
-//console.log(REACT_APP_PROJECTSECRET)
 const auth = 'Basic ' + Buffer.from(REACT_APP_PROJECTID + ':' + REACT_APP_PROJECTSECRET).toString('base64');
 const client = create({
     host: 'infura-ipfs.io',
@@ -62,7 +59,7 @@ const Create = ({ marketplace, nft, account}) => {
       //let listingFee = await marketplace.methods.getListingFee()
       //listingFee = listingFee.toString()
 
-      nft.methods.mint(uri).send({ from: account }).on('receipt', function (receipt) {
+      await nft.methods.mint(uri).send({ from: account }).on('receipt', function (receipt) {
         console.log('minted');
         // List the NFT
         const tokenId = receipt.events.NFTMinted.returnValues[0];

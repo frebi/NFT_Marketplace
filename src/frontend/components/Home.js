@@ -84,9 +84,11 @@ const Home = ({ marketplace, nft, account }) => {
               </Row>
             </div>
             : (
-              <main style={{ padding: "1rem 0" }}>
-                <h2>No listed assets</h2>
-              </main>
+              <div className="px-5 py-5 container">
+                <main style={{ padding: "1rem 0" }}>
+                  <h2>No listed assets</h2>
+                </main>
+              </div>
             )}
         </div>
       );

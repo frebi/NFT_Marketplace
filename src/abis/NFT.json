@@ -22134,12 +22134,12 @@
     "5777": {
       "events": {},
       "links": {},
-      "address": "0x9b15AD6aF966FbC0fDf6Fa5c38b7543bf76405Bf",
-      "transactionHash": "0x8b0b41a6f67f3f2db7431e59c62e7de8f628eaff6177dea00e466a370df4021c"
+      "address": "0x6b8B7A7a9FE1C5C9F463Cc721B85b8cdF1408D0a",
+      "transactionHash": "0x11c3668b65bd469d4068592968e75e9225f927544eaa6d2a12fda7e73740c124"
     }
   },
   "schemaVersion": "3.4.8",
-  "updatedAt": "2022-11-02T10:27:30.856Z",
+  "updatedAt": "2022-11-02T14:09:42.785Z",
   "networkType": "ethereum",
   "devdoc": {
     "kind": "dev",
