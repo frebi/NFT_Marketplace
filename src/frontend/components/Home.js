@@ -9,24 +9,13 @@ const Home = ({ marketplace, nft, account }) => {
         //load all unsold items
         const itemCount = await marketplace.methods.get_nftCount().call()
         let items = []
-        //console.log("nft count: "+itemCount)
         for(let i=1; i <= itemCount; i++){
             const item = await marketplace.methods.get_NFT(i).call()
-            
-
-          //-------------
-            console.log("price: "+item.price)
-            console.log("tokenid: "+item.tokenId)
-            console.log("seller: "+item.seller)
-            console.log("listed: "+item.listed)
-            console.log("uri: "+await nft.methods.tokenURI(item.tokenId).call())
-          //-------------
 
             // Iterate over the listed NFTs and retrieve their metadata
             if(item.listed){
                 //get uri url from nft contract
                 const uri = await nft.methods.tokenURI(item.tokenId).call()
-                console.log("line 28: "+uri)
                 try{
                   //use uri to fetch the nft metadata stored on ipfs
                   const response = await fetch(uri)
@@ -66,6 +55,7 @@ const Home = ({ marketplace, nft, account }) => {
         </main>
       )
 
+      //User cannot buy his own nft item, so the Buy button will be disabled 
       return (
         <div className="flex justify-center">
           {items.length > 0 ?
@@ -83,7 +73,7 @@ const Home = ({ marketplace, nft, account }) => {
                       </Card.Body>
                       <Card.Footer>
                         <div className='d-grid'>
-                          <Button onClick={() => buyMarketItem(item)} variant="primary" size="lg">
+                          <Button disabled={(item.seller === account? true: false)} onClick={() => buyMarketItem(item)} variant="primary" size="lg">
                             Buy for {ethers.utils.formatEther(item.price)} ETH
                           </Button>
                         </div>

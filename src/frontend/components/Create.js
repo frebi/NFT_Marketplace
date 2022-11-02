@@ -23,20 +23,17 @@ const Create = ({ marketplace, nft, account}) => {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   
-  //console.log(nft._address)
 
   const uploadToIPFS = async (event) =>{
     event.preventDefault()
     const file = event.target.files[0]
 
-    console.log(file)
     setImage(file)
 
     
     if(typeof file !== 'undefined'){
       try{
         const result = await client.add(file)
-        console.log("line 39: "+result)
         setImage(`https://my-nft-market.infura-ipfs.io/ipfs/${result.path}`)
       }catch (error){
         console.log("ipfs image upload error: ", error)
@@ -50,7 +47,6 @@ const Create = ({ marketplace, nft, account}) => {
     try{
       const result = await client.add(JSON.stringify({image, price, name, description}))
       //const result = JSON.stringify({image, price, name, description})
-      console.log("line 53: "+result)
 
       await mintAndList(result)
 
@@ -62,10 +58,6 @@ const Create = ({ marketplace, nft, account}) => {
   const mintAndList = async (result) =>{
     //const uri = `https://ipfs.infura.io/ipfs/${result.path}`
     const uri = `https://my-nft-market.infura-ipfs.io/ipfs/${result.path}`
-    console.log("line 63: "+uri)
-
-    //console.log(uri)
-    //console.log(account)
 
       //let listingFee = await marketplace.methods.getListingFee()
       //listingFee = listingFee.toString()
@@ -74,7 +66,6 @@ const Create = ({ marketplace, nft, account}) => {
         console.log('minted');
         // List the NFT
         const tokenId = receipt.events.NFTMinted.returnValues[0];
-        console.log(tokenId)
         try{
         marketplace.methods.listNft(nft._address, tokenId, Web3.utils.toWei(price, "ether"))
             .send({ from: account, value: 100000000000000 }).on('receipt', function () {

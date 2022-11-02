@@ -27,8 +27,8 @@ contract Marketplace is ReentrancyGuard{
         bool listed;
     }
 
-    event NFTListed(address nftContract, uint256 tokenId, address seller, address owner, uint256 price);
-    event NFTSold(address nftContract, uint256 tokenId, address seller, address owner, uint256 price);
+    event NFTListed(address indexed nftContract, uint256 tokenId, address indexed seller, address indexed owner, uint256 price);
+    event NFTSold(address indexed nftContract, uint256 tokenId, address indexed seller, address indexed owner, uint256 price);
 
     constructor(uint _LISTING_FEE){
         _marketOwner = payable(msg.sender);
